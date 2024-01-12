@@ -1,6 +1,7 @@
 #include "ankibuffer.h"
 
 int main() {
+    
     BOOL prevCtrlState = FALSE;
     BOOL prevCState = FALSE; 
     const char* targetProcessName = "anki.exe";
@@ -12,14 +13,13 @@ int main() {
     }
 
     char buffer[100];
+    
         
     while (1) {
         SHORT ctrlState = GetAsyncKeyState(VK_CTRL);
         SHORT cState = GetAsyncKeyState(VK_C);
         BOOL isCtrlPressed = ctrlState & 0x8000;
         BOOL isCPressed = cState & 0x8000;
-        
-        printf("Ctrl State: %d, C State: %d\n", isCtrlPressed, isCPressed);
         if (isCPressed && !prevCState ) {
             if (isCtrlPressed) {
                 HandleCtrlC();

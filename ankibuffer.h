@@ -74,16 +74,26 @@ void ClickAtCoords(HWND hWnd, int x, int y) {
     printf("Send input at %d, %d\n", input.mi.dx, input.mi.dy);
 }
 
+void SimulateCtrlV() {
+    keybd_event(VK_CONTROL, 0, 0, 0);
+    keybd_event(0x56, 0, 0, 0);
+    keybd_event(0x56, 0, KEYEVENTF_KEYUP, 0);
+    keybd_event(VK_CONTROL, 0, KEYEVENTF_KEYUP, 0);
+}
+
 void HandleCtrlC() {
-    printf("ctrl c triggered\n");
     char* copied = obtainClipboard();
     printf("Copied text: %s\n", copied);
     HWND anki = FindWindowEx(NULL, NULL, "Qt652QWindowIcon", NULL);
     if (anki) {
         int x = 400;
         int y = 40;
+        SetActiveWindow(anki);
         SetForegroundWindow(anki);
+        ShowWindow(anki, SW_SHOWNORMAL);
         ClickAtCoords(anki, x, y);
+        Sleep(800);
+        SimulateCtrlV();
     } else {
         printf("anki window not found\n");
     }
