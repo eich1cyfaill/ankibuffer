@@ -2,6 +2,10 @@
 #include <tlhelp32.h>
 #include <stdio.h>
 
+#define VK_CTRL 0x11
+#define VK_C 0x43
+
+
 DWORD GetProcessIdByName(const char* processName) {
     PROCESSENTRY32 pe32;
     pe32.dwSize = sizeof(PROCESSENTRY32);
@@ -41,7 +45,6 @@ char* obtainClipboard() {
         HANDLE hClipboardData = GetClipboardData(CF_TEXT);
         clipboardText = (char*)GlobalLock(hClipboardData);
         if (clipboardText != NULL) {
-            printf("Copied text: %s\n", clipboardText);
             GlobalUnlock(hClipboardData);
         } else {
             fprintf(stderr, "Error getting clipboard data\n");
@@ -53,28 +56,35 @@ char* obtainClipboard() {
     return clipboardText;
 }
 
-BOOL CtrlHandler(DWORD fdwCtrlType) {
-    switch (fdwCtrlType) {
-        case CTRL_C_EVENT:
-            char* copied = obtainClipboard();
-            printf(copied);
-            HWND anki = FindWindow(NULL, "Qt652QWindowIcon");
-            printf("did");
-            if (anki) {
-                HWND addWindow = FindWindowEx(anki, NULL, "Qt652QWindowIcon", "Add");
-                if (addWindow) {
-                    PostMessage(addWindow, WM_COMMAND, BN_CLICKED, 0);
-                    printf("Sent message to open the add window.\n");
-                } else {
-                    printf("Could not find the add window.\n");
-                }
-            } else {
-                printf("anki window not found\n");
-            }
+void ClickAtCoords(HWND hWnd, int x, int y) {
+    RECT rect;
+    POINT pt;
+    INPUT input = {0};
+    GetClientRect(hWnd, &rect);
+    pt.x = rect.left + x;
+    pt.y = rect.top + y;
+    ClientToScreen(hWnd, &pt);
 
-            return TRUE;
+    input.type = INPUT_MOUSE;
+    input.mi.dx = pt.x * (65535 / GetSystemMetrics(SM_CXSCREEN)); 
+    input.mi.dy = pt.y * (65535 / GetSystemMetrics(SM_CYSCREEN)); 
+    input.mi.dwFlags = MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_MOVE | MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP;
 
-        default:
-            return FALSE;
+    SendInput(1, &input, sizeof(INPUT));
+    printf("Send input at %d, %d\n", input.mi.dx, input.mi.dy);
+}
+
+void HandleCtrlC() {
+    printf("ctrl c triggered\n");
+    char* copied = obtainClipboard();
+    printf("Copied text: %s\n", copied);
+    HWND anki = FindWindowEx(NULL, NULL, "Qt652QWindowIcon", NULL);
+    if (anki) {
+        int x = 400;
+        int y = 40;
+        SetForegroundWindow(anki);
+        ClickAtCoords(anki, x, y);
+    } else {
+        printf("anki window not found\n");
     }
 }
