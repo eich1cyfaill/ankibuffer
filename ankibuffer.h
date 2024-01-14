@@ -6,6 +6,10 @@
 #define VK_C 0x43
 
 
+HWND getAnkiWindowInstance() {
+    return FindWindowEx(NULL, NULL, "Qt652QWindowIcon", NULL);
+}
+
 DWORD GetProcessIdByName(const char* processName) {
     PROCESSENTRY32 pe32;
     pe32.dwSize = sizeof(PROCESSENTRY32);
@@ -74,6 +78,11 @@ void ClickAtCoords(HWND hWnd, int x, int y) {
     printf("Send input at %d, %d\n", input.mi.dx, input.mi.dy);
 }
 
+void SetWindowSize(HWND hwnd, int width, int height) {
+    int flags = SWP_NOMOVE | SWP_NOZORDER;
+    SetWindowPos(hwnd, NULL, 969, 765, width, height, flags);
+}
+
 void SimulateCtrlV() {
     keybd_event(VK_CONTROL, 0, 0, 0);
     keybd_event(0x56, 0, 0, 0);
@@ -84,13 +93,14 @@ void SimulateCtrlV() {
 void HandleCtrlC() {
     char* copied = obtainClipboard();
     printf("Copied text: %s\n", copied);
-    HWND anki = FindWindowEx(NULL, NULL, "Qt652QWindowIcon", NULL);
+    HWND anki = getAnkiWindowInstance();
     if (anki) {
         int x = 400;
         int y = 40;
         SetActiveWindow(anki);
         SetForegroundWindow(anki);
         ShowWindow(anki, SW_SHOWNORMAL);
+        SetWindowSize(anki, 954, 728);
         ClickAtCoords(anki, x, y);
         Sleep(800);
         SimulateCtrlV();

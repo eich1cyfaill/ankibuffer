@@ -8,12 +8,14 @@ int main() {
     DWORD processId = GetProcessIdByName(targetProcessName);
     HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, processId); // getting access
     if (hProcess == NULL) {
-        perror("Anki isn't launched");
+        perror("Anki isn't launched\nWill exit by 2 seconds...");
+        Sleep(2000);
         return 1;
     }
-
-    char buffer[100];
-    
+    HWND anki = getAnkiWindowInstance();
+    SetActiveWindow(anki);
+    SetForegroundWindow(anki);
+    ShowWindow(anki, SW_SHOWNORMAL);
         
     while (1) {
         SHORT ctrlState = GetAsyncKeyState(VK_CTRL);
